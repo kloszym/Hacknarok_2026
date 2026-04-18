@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FactCheck AI - Results</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      padding: 20px;
+      min-height: 100vh;
+    }
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 15px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+      overflow: hidden;
+    }
+    .header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 25px;
+      text-align: center;
+    }
+    .header h1 {
+      font-size: 28px;
+      margin-bottom: 5px;
+    }
+    .header .subtitle {
+      font-size: 14px;
+      opacity: 0.9;
+    }
+    .content {
+      padding: 30px;
+    }
+    .section {
+      margin-bottom: 30px;
+    }
+    .section-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 15px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #667eea;
+    }
+    .selected-text {
+      background: #f8f9fa;
+      padding: 20px;
+      border-radius: 10px;
+      border-left: 4px solid #667eea;
+      font-style: italic;
+      color: #555;
+      line-height: 1.6;
+    }
+    .loading {
+      text-align: center;
+      padding: 40px;
+    }
+    .spinner {
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #667eea;
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 20px;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    .analysis {
+      background: #f8f9fa;
+      padding: 20px;
+      border-radius: 10px;
+      line-height: 1.8;
+      color: #333;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+    .verdict {
+      display: inline-block;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-weight: 600;
+      margin-bottom: 15px;
+      font-size: 14px;
+    }
+    .verdict.true {
+      background: #d4edda;
+      color: #155724;
+    }
+    .verdict.false {
+      background: #f8d7da;
+      color: #721c24;
+    }
+    .verdict.partial {
+      background: #fff3cd;
+      color: #856404;
+    }
+    .verdict.context {
+      background: #d1ecf1;
+      color: #0c5460;
+    }
+    .sources {
+      list-style: none;
+    }
+    .source-item {
+      background: #f8f9fa;
+      padding: 12px 15px;
+      margin-bottom: 10px;
+      border-radius: 8px;
+      border-left: 3px solid #667eea;
+      transition: transform 0.2s;
+    }
+    .source-item:hover {
+      transform: translateX(5px);
+      background: #e9ecef;
+    }
+    .source-item a {
+      color: #667eea;
+      text-decoration: none;
+      font-weight: 500;
+      word-break: break-all;
+    }
+    .source-item a:hover {
+      text-decoration: underline;
+    }
+    .source-type {
+      display: inline-block;
+      background: #667eea;
+      color: white;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      margin-right: 8px;
+      text-transform: uppercase;
+    }
+    .error {
+      background: #f8d7da;
+      color: #721c24;
+      padding: 20px;
+      border-radius: 10px;
+      border-left: 4px solid #dc3545;
+    }
+    .model-info {
+      text-align: center;
+      padding: 15px;
+      background: #e7f3ff;
+      border-radius: 8px;
+      font-size: 12px;
+      color: #555;
+    }
+    .model-info strong {
+      color: #2196F3;
+    }
+    .no-sources {
+      text-align: center;
+      padding: 20px;
+      color: #999;
+      font-style: italic;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🔍 FactCheck AI</h1>
+      <div class="subtitle">AI-Powered Fact Verification</div>
+    </div>
+    
+    <div class="content">
+      <div class="section">
+        <div class="section-title">Selected Text</div>
+        <div class="selected-text" id="selectedText"></div>
+      </div>
+      
+      <div id="loadingSection" class="loading">
+        <div class="spinner"></div>
+        <div id="loadingText">Analyzing...</div>
+      </div>
+      
+      <div id="resultsSection" style="display: none;">
+        <div class="section">
+          <div class="section-title">Analysis</div>
+          <div id="verdictContainer"></div>
+          <div class="analysis" id="analysisText"></div>
+        </div>
+        
+        <div class="section">
+          <div class="section-title">Sources & References</div>
+          <ul class="sources" id="sourcesList"></ul>
+        </div>
+        
+        <div class="model-info">
+          Powered by <strong id="modelName"></strong>
+        </div>
+      </div>
+      
+      <div id="errorSection" style="display: none;">
+        <div class="error" id="errorText"></div>
+      </div>
+    </div>
+  </div>
+  
+  <script src="factcheck.js"></script>
+</body>
+</html>

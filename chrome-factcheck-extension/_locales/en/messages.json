@@ -1,0 +1,29 @@
+{
+  "extensionName": {
+    "message": "FactCheck AI"
+  },
+  "extensionDescription": {
+    "message": "Verify the truthfulness of selected text using Google Fact Check Tools API"
+  },
+  "contextMenuTitle": {
+    "message": "Check truthfulness"
+  },
+  "apiKeyPlaceholder": {
+    "message": "Enter your Google API Key"
+  },
+  "saveButton": {
+    "message": "Save"
+  },
+  "apiKeySaved": {
+    "message": "API Key saved successfully!"
+  },
+  "analyzing": {
+    "message": "Analyzing..."
+  },
+  "error": {
+    "message": "Error"
+  },
+  "noApiKey": {
+    "message": "Please set your Google API key in the extension popup first."
+  }
+}

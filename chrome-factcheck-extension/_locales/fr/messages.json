@@ -1,0 +1,29 @@
+{
+  "extensionName": {
+    "message": "FactCheck AI"
+  },
+  "extensionDescription": {
+    "message": "Vérifiez la véracité du texte sélectionné à l'aide de Google Fact Check Tools API"
+  },
+  "contextMenuTitle": {
+    "message": "Vérifier la véracité"
+  },
+  "apiKeyPlaceholder": {
+    "message": "Entrez votre clé API Google"
+  },
+  "saveButton": {
+    "message": "Enregistrer"
+  },
+  "apiKeySaved": {
+    "message": "Clé API enregistrée avec succès!"
+  },
+  "analyzing": {
+    "message": "Analyse en cours..."
+  },
+  "error": {
+    "message": "Erreur"
+  },
+  "noApiKey": {
+    "message": "Veuillez d'abord définir votre clé API Google dans la popup de l'extension."
+  }
+}
