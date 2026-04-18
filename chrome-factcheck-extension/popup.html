@@ -33,12 +33,6 @@
       color: #555;
       font-weight: 500;
     }
-    .optional {
-      font-weight: normal;
-      font-style: italic;
-      color: #999;
-      font-size: 11px;
-    }
     input {
       width: 100%;
       padding: 10px;
@@ -47,6 +41,7 @@
       font-size: 14px;
       box-sizing: border-box;
       transition: border-color 0.3s;
+      margin-bottom: 15px;
     }
     input:focus {
       outline: none;
@@ -62,7 +57,7 @@
       font-size: 16px;
       font-weight: 600;
       cursor: pointer;
-      margin-top: 15px;
+      margin-top: 10px;
       transition: transform 0.2s;
     }
     button:hover {
@@ -70,6 +65,15 @@
     }
     button:active {
       transform: translateY(0);
+    }
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+    .analyze-btn {
+      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+      margin-top: 20px;
     }
     .message {
       margin-top: 15px;
@@ -89,6 +93,11 @@
       color: #721c24;
       border: 1px solid #f5c6cb;
     }
+    .message.info {
+      background: #d1ecf1;
+      color: #0c5460;
+      border: 1px solid #bee5eb;
+    }
     .info {
       margin-top: 15px;
       padding: 10px;
@@ -106,6 +115,11 @@
     .info a:hover {
       text-decoration: underline;
     }
+    .divider {
+      height: 1px;
+      background: #e0e0e0;
+      margin: 20px 0;
+    }
   </style>
 </head>
 <body>
@@ -119,13 +133,17 @@
     <label for="geminiKey">Gemini API Key (Analiza AI):</label>
     <input type="password" id="geminiKey" placeholder="AIza-xxxxx">
 
-    <label for="hfKey">Hugging Face Key <span class="optional">(Opcjonalnie)</span>:</label>
-    <input type="password" id="hfKey" placeholder="hf_xxxxx">
-
     <button id="saveBtn">Zapisz</button>
-    <div id="message" class="message"></div> <!-- DODANO TO -->
+    <div id="message" class="message"></div>
+    
+    <div class="divider"></div>
+    
+    <button id="analyzeBtn" class="analyze-btn">🔎 Analyze Webpage</button>
+    
     <div class="info">
       Pobierz klucz z <a href="https://tavily.com/" target="_blank">Tavily Dashboard</a>
+      <br><br>
+      <strong>Analyze Webpage:</strong> Skanuje bieżącą stronę w poszukiwaniu potencjalnych manipulacji i zaznacza je na czerwono.
     </div>
   </div>
   <script src="popup.js"></script>
