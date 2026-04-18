@@ -11,7 +11,7 @@
     "scripting"
   ],
   "host_permissions": [
-    "https://factchecktools.googleapis.com/*"
+    "https://api.tavily.com/*"
   ],
   "background": {
     "service_worker": "background.js"

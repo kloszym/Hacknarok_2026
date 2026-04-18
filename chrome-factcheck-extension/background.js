@@ -23,10 +23,10 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
     console.log('FactCheck AI: Selected text:', selectedText);
     
     // Check if API key is set
-    const result = await chrome.storage.sync.get(['googleApiKey']);
-    console.log('FactCheck AI: API key check:', result.googleApiKey ? 'Key exists' : 'No key');
+    const result = await chrome.storage.sync.get(['tavilyApiKey']); // Zmienione z googleApiKey
+    console.log('FactCheck AI: API key check:', result.tavilyApiKey ? 'Key exists' : 'No key');
     
-    if (!result.googleApiKey) {
+    if (!result.tavilyApiKey) {
       // Show alert if no API key
       console.log('FactCheck AI: No API key, showing alert');
       try {
@@ -91,105 +91,66 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
 // Perform fact-checking using Google Fact Check Tools API
 async function performFactCheck(text) {
-  console.log('FactCheck AI: Starting fact-check for:', text);
+  console.log('FactCheck AI (Tavily): Starting search for:', text);
   
   try {
-    const result = await chrome.storage.sync.get(['googleApiKey']);
-    const apiKey = result.googleApiKey;
+    const result = await chrome.storage.sync.get(['tavilyApiKey']);
+    const apiKey = result.tavilyApiKey;
     
     if (!apiKey) {
-      throw new Error('API key not set');
+      throw new Error('Tavily API key not set in extension settings');
     }
     
-    // Use Google Fact Check Tools API
-    const url = `https://factchecktools.googleapis.com/v1alpha1/claims:search?query=${encodeURIComponent(text)}&key=${apiKey}`;
-    console.log('FactCheck AI: Fetching from API:', url.replace(apiKey, 'HIDDEN'));
-    
-    const response = await fetch(url, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json'
-      }
+    // Zapytanie do Tavily API
+    const response = await fetch('https://api.tavily.com/search', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        api_key: apiKey,
+        query: `Verify the following claim: "${text}"`,
+        search_depth: "advanced",
+        include_answer: true,
+        max_results: 5
+      })
     });
-    
-    console.log('FactCheck AI: API response status:', response.status);
     
     if (!response.ok) {
       const errorData = await response.json();
-      console.error('FactCheck AI: API error:', errorData);
-      throw new Error(errorData.error?.message || 'API request failed');
+      throw new Error(errorData.detail || 'Tavily API request failed');
     }
     
     const data = await response.json();
-    console.log('FactCheck AI: API data:', data);
     
-    // Process the response
-    if (!data.claims || data.claims.length === 0) {
-      console.log('FactCheck AI: No claims found');
-      return {
-        success: true,
-        analysis: 'No fact-check results found for this claim. This doesn\'t necessarily mean the statement is false - it may simply not have been fact-checked yet by major organizations.',
-        sources: [],
-        claims: [],
-        verdict: 'unknown'
-      };
-    }
+    // Mapowanie wyników Tavily na format Twojego interfejsu
+    const analysis = data.answer || "No direct answer from AI, check sources below.";
     
-    // Extract claims and their reviews
-    const claims = data.claims.map(claim => {
-      const claimReview = claim.claimReview?.[0] || {};
-      return {
-        text: claim.text || text,
-        claimant: claim.claimant || 'Unknown',
-        claimDate: claim.claimDate || 'Unknown',
-        publisher: claimReview.publisher?.name || 'Unknown',
-        url: claimReview.url || '',
-        title: claimReview.title || '',
-        reviewDate: claimReview.reviewDate || 'Unknown',
-        textualRating: claimReview.textualRating || 'No rating',
-        languageCode: claimReview.languageCode || 'en'
-      };
-    });
-    
-    console.log('FactCheck AI: Processed claims:', claims);
-    
-    // Generate analysis summary
-    const analysis = generateAnalysisSummary(claims);
-    
-    // Extract sources
-    const sources = claims
-      .filter(claim => claim.url)
-      .map(claim => ({
-        type: 'url',
-        value: claim.url,
-        publisher: claim.publisher,
-        rating: claim.textualRating
-      }));
-    
-    // Determine overall verdict
-    const verdict = determineVerdict(claims);
-    
-    const factCheckResult = {
+    const sources = data.results.map(res => ({
+      type: 'url',
+      value: res.url,
+      publisher: res.title,
+      rating: `Score: ${Math.round(res.score * 100)}%`
+    }));
+
+    // Próba automatycznego określenia werdyktu na podstawie odpowiedzi AI
+    let verdict = 'unknown';
+    const lowerAnswer = analysis.toLowerCase();
+    if (lowerAnswer.includes('false') || lowerAnswer.includes('incorrect') || lowerAnswer.includes('myth')) verdict = 'false';
+    else if (lowerAnswer.includes('true') || lowerAnswer.includes('correct') || lowerAnswer.includes('confirmed')) verdict = 'true';
+    else if (lowerAnswer.includes('partially') || lowerAnswer.includes('mixed')) verdict = 'partial';
+
+    return {
       success: true,
       analysis: analysis,
       sources: sources,
-      claims: claims,
       verdict: verdict,
-      api: 'Google Fact Check Tools API'
+      api: 'Tavily AI Search API'
     };
-    
-    console.log('FactCheck AI: Returning result:', factCheckResult);
-    return factCheckResult;
     
   } catch (error) {
-    console.error('FactCheck AI: Fact-check error:', error);
-    return {
-      success: false,
-      error: error.message
-    };
+    console.error('FactCheck AI Error:', error);
+    return { success: false, error: error.message };
   }
 }
-
 // Generate analysis summary from claims
 function generateAnalysisSummary(claims) {
   if (claims.length === 0) {

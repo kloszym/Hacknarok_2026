@@ -6,15 +6,13 @@ document.addEventListener('DOMContentLoaded', async () => {
   const apiKeyLabel = document.getElementById('apiKeyLabel');
 
   // Set localized text
-  apiKeyLabel.textContent = 'Google API Key:';
+  apiKeyLabel.textContent = 'Tavily API Key:';
   apiKeyInput.placeholder = chrome.i18n.getMessage('apiKeyPlaceholder');
   saveBtn.textContent = chrome.i18n.getMessage('saveButton');
 
   // Load saved API key
-  const result = await chrome.storage.sync.get(['googleApiKey']);
-  if (result.googleApiKey) {
-    apiKeyInput.value = result.googleApiKey;
-  }
+ const result = await chrome.storage.sync.get(['tavilyApiKey']);
+ if (result.tavilyApiKey) { apiKeyInput.value = result.tavilyApiKey; }
 
   // Save API key
   saveBtn.addEventListener('click', async () => {
@@ -26,7 +24,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     try {
-      await chrome.storage.sync.set({ googleApiKey: apiKey });
+      await chrome.storage.sync.set({ tavilyApiKey: apiKey });
       showMessage(chrome.i18n.getMessage('apiKeySaved'), 'success');
       
       // Close popup after 1.5 seconds

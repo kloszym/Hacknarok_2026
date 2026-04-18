@@ -106,14 +106,12 @@
   <div class="container">
     <div class="logo">🔍</div>
     <h1>FactCheck AI</h1>
-    <label for="apiKey" id="apiKeyLabel"></label>
-    <input type="password" id="apiKey" placeholder="">
-    <button id="saveBtn"></button>
-    <div id="message" class="message"></div>
+    <label for="apiKey" id="apiKeyLabel">Tavily API Key:</label>
+    <input type="password" id="apiKey" placeholder="tvly-xxxxx">
+    <button id="saveBtn">Zapisz</button>
+    <div id="message" class="message"></div> <!-- DODANO TO -->
     <div class="info">
-      Get your API key from <a href="https://console.cloud.google.com/apis/credentials" target="_blank">Google Cloud Console</a>
-      <br><br>
-      Enable the <strong>Fact Check Tools API</strong> in your Google Cloud project.
+      Pobierz klucz z <a href="https://tavily.com/" target="_blank">Tavily Dashboard</a>
     </div>
   </div>
   <script src="popup.js"></script>
