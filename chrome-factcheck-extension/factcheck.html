@@ -34,7 +34,7 @@
     }
     .content {
       padding: 15px;
-      max-height: 400px;
+      max-height: 450px; /* Zwiększono nieco wysokość */
       overflow-y: auto;
     }
     .section {
@@ -97,48 +97,56 @@
       margin-bottom: 8px;
       font-size: 11px;
     }
-    .verdict.true {
-      background: #d4edda;
-      color: #155724;
-    }
-    .verdict.false {
-      background: #f8d7da;
-      color: #721c24;
-    }
-    .verdict.partial {
-      background: #fff3cd;
-      color: #856404;
-    }
-    .verdict.context {
-      background: #d1ecf1;
-      color: #0c5460;
-    }
-    .verdict.unknown {
-      background: #e2e3e5;
-      color: #383d41;
-    }
+    .verdict.true { background: #d4edda; color: #155724; }
+    .verdict.false { background: #f8d7da; color: #721c24; }
+    .verdict.partial { background: #fff3cd; color: #856404; }
+    .verdict.context { background: #d1ecf1; color: #0c5460; }
+    .verdict.unknown { background: #e2e3e5; color: #383d41; }
+
     .sources {
       list-style: none;
       padding: 0;
-      max-height: 120px;
-      overflow-y: auto;
+      /* Pozwalamy liście rosnąć */
     }
     .source-item {
       background: #f8f9fa;
-      padding: 8px;
-      margin-bottom: 6px;
-      border-radius: 6px;
+      padding: 10px;
+      margin-bottom: 10px;
+      border-radius: 8px;
       border-left: 3px solid #667eea;
       font-size: 10px;
     }
-    .source-item:hover {
-      background: #e9ecef;
+    
+    /* --- NOWE STYLE DLA NOTATEK AI --- */
+    .source-note {
+      margin-top: 8px;
+      padding: 8px;
+      background-color: #f1f3f9;
+      border-left: 3px solid #764ba2;
+      border-radius: 4px;
+      font-size: 10px;
+      color: #444;
+      line-height: 1.4;
+      font-style: italic;
     }
+    .source-note-title {
+      font-weight: bold;
+      color: #764ba2;
+      display: block;
+      margin-bottom: 3px;
+      font-style: normal;
+      font-size: 9px;
+      text-transform: uppercase;
+    }
+    /* -------------------------------- */
+
     .source-item a {
       color: #667eea;
       text-decoration: none;
       font-weight: 500;
       word-break: break-all;
+      display: block;
+      margin-top: 4px;
     }
     .source-item a:hover {
       text-decoration: underline;
@@ -154,12 +162,9 @@
       text-transform: uppercase;
     }
     .error {
-      background: #f8d7da;
-      color: #721c24;
-      padding: 12px;
-      border-radius: 8px;
-      border-left: 3px solid #dc3545;
-      font-size: 11px;
+      background: #f8d7da; color: #721c24;
+      padding: 12px; border-radius: 8px;
+      border-left: 3px solid #dc3545; font-size: 11px;
     }
     .model-info {
       text-align: center;
@@ -170,16 +175,7 @@
       color: #555;
       margin-top: 8px;
     }
-    .model-info strong {
-      color: #2196F3;
-    }
-    .no-sources {
-      text-align: center;
-      padding: 12px;
-      color: #999;
-      font-style: italic;
-      font-size: 10px;
-    }
+    .model-info strong { color: #2196F3; }
   </style>
 </head>
 <body>
@@ -197,7 +193,7 @@
       
       <div id="loadingSection" class="loading">
         <div class="spinner"></div>
-        <div id="loadingText">Analyzing...</div>
+        <div id="loadingText">Inicjalizacja...</div>
       </div>
       
       <div id="resultsSection" style="display: none;">
@@ -222,7 +218,6 @@
       </div>
     </div>
   </div>
-  
   <script src="factcheck.js"></script>
 </body>
 </html>

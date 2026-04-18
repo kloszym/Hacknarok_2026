@@ -1,43 +1,57 @@
-// Load localized messages
+// Load localized messages and saved keys
 document.addEventListener('DOMContentLoaded', async () => {
-  const apiKeyInput = document.getElementById('apiKey');
+  const tavilyInput = document.getElementById('tavilyKey');
+  const geminiInput = document.getElementById('geminiKey');
+  const hfInput = document.getElementById('hfKey');
   const saveBtn = document.getElementById('saveBtn');
   const message = document.getElementById('message');
-  const apiKeyLabel = document.getElementById('apiKeyLabel');
 
-  // Set localized text
-  apiKeyLabel.textContent = 'Google API Key:';
-  apiKeyInput.placeholder = chrome.i18n.getMessage('apiKeyPlaceholder');
-  saveBtn.textContent = chrome.i18n.getMessage('saveButton');
+  // Ustawienie tekstu przycisku z plików lokalizacji (i18n)
+  saveBtn.textContent = chrome.i18n.getMessage('saveButton') || 'Zapisz ustawienia';
 
-  // Load saved API key
-  const result = await chrome.storage.sync.get(['googleApiKey']);
-  if (result.googleApiKey) {
-    apiKeyInput.value = result.googleApiKey;
-  }
+  // Wczytanie zapisanych kluczy z pamięci sync
+  const result = await chrome.storage.sync.get([
+    'tavilyApiKey', 
+    'geminiApiKey', 
+    'hfApiKey'
+  ]);
 
-  // Save API key
+  if (result.tavilyApiKey) tavilyInput.value = result.tavilyApiKey;
+  if (result.geminiApiKey) geminiInput.value = result.geminiApiKey;
+  if (result.hfApiKey) hfInput.value = result.hfApiKey;
+
+  // Obsługa zapisu
   saveBtn.addEventListener('click', async () => {
-    const apiKey = apiKeyInput.value.trim();
+    const tavilyValue = tavilyInput.value.trim();
+    const geminiValue = geminiInput.value.trim();
+    const hfValue = hfInput.value.trim();
     
-    if (!apiKey) {
-      showMessage(chrome.i18n.getMessage('error'), 'error');
+    // Walidacja: Tavily i Gemini są wymagane do działania
+    if (!tavilyValue || !geminiValue) {
+      showMessage(chrome.i18n.getMessage('error') || 'Klucze Tavily i Gemini są wymagane!', 'error');
       return;
     }
 
     try {
-      await chrome.storage.sync.set({ googleApiKey: apiKey });
-      showMessage(chrome.i18n.getMessage('apiKeySaved'), 'success');
+      // Zapisujemy wszystkie klucze naraz
+      await chrome.storage.sync.set({ 
+        tavilyApiKey: tavilyValue,
+        geminiApiKey: geminiValue,
+        hfApiKey: hfValue
+      });
+
+      showMessage(chrome.i18n.getMessage('apiKeySaved') || 'Ustawienia zapisane!', 'success');
       
-      // Close popup after 1.5 seconds
+      // Zamknij popup po krótkiej chwili
       setTimeout(() => {
         window.close();
       }, 1500);
     } catch (error) {
-      showMessage(chrome.i18n.getMessage('error') + ': ' + error.message, 'error');
+      showMessage('Błąd zapisu: ' + error.message, 'error');
     }
   });
 
+  // Funkcja do wyświetlania komunikatów
   function showMessage(text, type) {
     message.textContent = text;
     message.className = 'message ' + type;
