@@ -1,4 +1,6 @@
 // background.js - Service Worker dla rozszerzenia
+import { runFactCheckWorkflow } from './workflow.js';
+
 console.log('[BACKGROUND] Service worker uruchomiony');
 
 // Utwórz menu kontekstowe po zainstalowaniu
@@ -30,10 +32,7 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
       
       console.log('[BACKGROUND] Klucze API pobrane pomyślnie');
       
-      // Importuj workflow i uruchom fact-checking
-      console.log('[BACKGROUND] Importuję workflow...');
-      const { runFactCheckWorkflow } = await import('./workflow.js');
-      
+      // Uruchom fact-checking workflow
       console.log('[BACKGROUND] Uruchamiam workflow fact-checking...');
       const result = await runFactCheckWorkflow(
         info.selectionText,

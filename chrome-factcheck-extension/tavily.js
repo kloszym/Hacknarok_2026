@@ -1,5 +1,5 @@
 // tavily.js
-async function fetchTavilyData(query) {
+export async function fetchTavilyData(query) {
   const keys = await chrome.storage.sync.get(['tavilyApiKey']);
   if (!keys.tavilyApiKey) throw new Error('Brak klucza Tavily');
 

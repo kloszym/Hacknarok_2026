@@ -171,7 +171,7 @@ async function checkFactGemini(link, thesis, apiKey, retries = 2) {
 }
 
 
-async function analyzeWithGemini(claim, searchContext) {
+export async function analyzeWithGemini(claim, searchContext) {
   const keys = await chrome.storage.sync.get(['geminiApiKey']);
   const apiKey = keys.geminiApiKey;
   try {

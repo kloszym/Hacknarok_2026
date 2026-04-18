@@ -1,5 +1,8 @@
 // workflow.js
-async function startFactCheckWorkflow(text) {
+import { fetchTavilyData } from './tavily.js';
+import { analyzeWithGemini } from './gemini_module.js';
+
+export async function runFactCheckWorkflow(text, tavilyApiKey, geminiApiKey) {
   try {
     const searchResults = await fetchTavilyData(text);
     const aiResult = await analyzeWithGemini(text, searchResults);
