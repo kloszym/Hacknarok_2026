@@ -33,6 +33,12 @@
       color: #555;
       font-weight: 500;
     }
+    .optional {
+      font-weight: normal;
+      font-style: italic;
+      color: #999;
+      font-size: 11px;
+    }
     input {
       width: 100%;
       padding: 10px;
@@ -106,8 +112,16 @@
   <div class="container">
     <div class="logo">🔍</div>
     <h1>FactCheck AI</h1>
-    <label for="apiKey" id="apiKeyLabel">Tavily API Key:</label>
-    <input type="password" id="apiKey" placeholder="tvly-xxxxx">
+    
+    <label for="tavilyKey">Tavily API Key (Wyszukiwanie):</label>
+    <input type="password" id="tavilyKey" placeholder="tvly-xxxxx">
+
+    <label for="geminiKey">Gemini API Key (Analiza AI):</label>
+    <input type="password" id="geminiKey" placeholder="AIza-xxxxx">
+
+    <label for="hfKey">Hugging Face Key <span class="optional">(Opcjonalnie)</span>:</label>
+    <input type="password" id="hfKey" placeholder="hf_xxxxx">
+
     <button id="saveBtn">Zapisz</button>
     <div id="message" class="message"></div> <!-- DODANO TO -->
     <div class="info">
