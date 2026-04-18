@@ -38,14 +38,13 @@ async function runFullFactCheck(searchResults, thesis, apiKey) {
     );
 
     const individualResults = await Promise.all(individualResultsPromises);
-    console.log("Otrzymano cząstkowe wyniki:", individualResults);
 
     // 3. Ostatnie zapytanie - Werdykt końcowy
     return await generateFinalVerdict(thesis, individualResults, apiKey);
 }
 
 async function generateFinalVerdict(thesis, individualResults, apiKey) {
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${apiKey}`;
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
     const todaysDate = new Date().toISOString().split('T')[0];
     console.log(`Generowanie werdyktu końcowego dla tezy: "${thesis}" na podstawie analiz z dnia ${todaysDate}`);
 
@@ -98,7 +97,6 @@ async function checkFactGemini(link, thesis, apiKey, retries = 2) {
 
       const site = await analyzeLink(link);
       console.log(`[Attempt ${attempt + 1}/${retries + 1}] Sprawdzanie tezy: ${thesis}`);
-      console.log(site)
 
       const todaysDate = new Date().toISOString().split('T')[0];
 
@@ -109,6 +107,8 @@ async function checkFactGemini(link, thesis, apiKey, retries = 2) {
         Odpowiedzi muszą być oparte na faktach i dowodach, a nie na opiniach. Pamiętaj że dzisiaj jest dzień ${todaysDate}.
         
         Teza: "${thesis}"
+
+        Strona do analizy: ${site}
         
         Zwróć odpowiedź WYŁĄCZNIE w formacie JSON o następującej strukturze:
         {
@@ -119,7 +119,7 @@ async function checkFactGemini(link, thesis, apiKey, retries = 2) {
 
         Unikaj ogólników i niepotwierdzonych informacji. Skup się na faktach i dowodach.
       `;
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${apiKey}`;
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
 
       const payload = {
         contents: [{
@@ -175,7 +175,6 @@ async function analyzeWithGemini(claim, searchContext) {
   const keys = await chrome.storage.sync.get(['geminiApiKey']);
   const apiKey = keys.geminiApiKey;
   try {
-      console.log(searchContext)
         const finalResult = await runFullFactCheck(searchContext, claim, apiKey);
         
         return finalResult;
