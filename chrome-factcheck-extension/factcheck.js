@@ -1,12 +1,39 @@
-// Get the selected text from URL parameter
-const urlParams = new URLSearchParams(window.location.search);
-const selectedText = urlParams.get('text');
+// Get the selected text from storage (for side panel) or URL parameter (fallback)
+let selectedText = '';
 
-// Display the selected text
-document.getElementById('selectedText').textContent = selectedText || 'No text selected';
-
-// Set loading text
-document.getElementById('loadingText').textContent = chrome.i18n.getMessage('analyzing');
+async function initializeFactCheck() {
+  // Try to get from storage first (side panel)
+  const storage = await chrome.storage.local.get(['selectedText', 'timestamp']);
+  
+  if (storage.selectedText && storage.timestamp) {
+    // Check if the stored text is recent (within last 5 seconds)
+    const age = Date.now() - storage.timestamp;
+    if (age < 5000) {
+      selectedText = storage.selectedText;
+      console.log('FactCheck AI: Got text from storage:', selectedText);
+    }
+  }
+  
+  // Fallback to URL parameter (for popup window compatibility)
+  if (!selectedText) {
+    const urlParams = new URLSearchParams(window.location.search);
+    selectedText = urlParams.get('text');
+    console.log('FactCheck AI: Got text from URL:', selectedText);
+  }
+  
+  // Display the selected text
+  document.getElementById('selectedText').textContent = selectedText || 'No text selected';
+  
+  // Set loading text
+  document.getElementById('loadingText').textContent = chrome.i18n.getMessage('analyzing');
+  
+  // Start fact-checking
+  if (selectedText) {
+    performFactCheck();
+  } else {
+    displayError('No text was selected');
+  }
+}
 
 // Perform fact-check
 async function performFactCheck() {
@@ -118,9 +145,5 @@ function displayError(errorMessage) {
   document.getElementById('errorText').textContent = `${chrome.i18n.getMessage('error')}: ${errorMessage}`;
 }
 
-// Start fact-checking when page loads
-if (selectedText) {
-  performFactCheck();
-} else {
-  displayError('No text was selected');
-}
+// Initialize when page loads
+document.addEventListener('DOMContentLoaded', initializeFactCheck);

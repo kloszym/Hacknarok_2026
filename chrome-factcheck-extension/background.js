@@ -43,26 +43,29 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
       return;
     }
     
-    // Open factcheck window with selected text
-    const width = 600;
-    const height = 700;
-    // Service workers don't have access to screen object, use default positioning
-    const left = 100;
-    const top = 100;
-    
-    console.log('FactCheck AI: Opening factcheck window');
+    // Store selected text and switch popup to factcheck view
+    console.log('FactCheck AI: Storing text and opening popup');
     try {
-      const window = await chrome.windows.create({
-        url: chrome.runtime.getURL(`factcheck.html?text=${encodeURIComponent(selectedText)}`),
-        type: 'popup',
-        width: width,
-        height: height,
-        left: left,
-        top: top
+      await chrome.storage.local.set({ 
+        selectedText: selectedText,
+        timestamp: Date.now(),
+        showFactCheck: true
       });
-      console.log('FactCheck AI: Window created:', window.id);
+      
+      // Temporarily change popup to factcheck.html
+      await chrome.action.setPopup({ popup: 'factcheck.html' });
+      
+      // Open the popup programmatically
+      await chrome.action.openPopup();
+      
+      // Reset popup back to default after a delay
+      setTimeout(async () => {
+        await chrome.action.setPopup({ popup: 'popup.html' });
+      }, 1000);
+      
+      console.log('FactCheck AI: Popup opened');
     } catch (error) {
-      console.error('FactCheck AI: Error creating window:', error);
+      console.error('FactCheck AI: Error opening popup:', error);
     }
   }
 });
