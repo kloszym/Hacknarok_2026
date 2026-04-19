@@ -121,9 +121,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         } catch (highlightError) {
           // highlight failed silently
         }
-        showMessage(`Znaleziono ${analysisResult.suspiciousClaims.length} podejrzanych twierdzeń`, 'success');
+        showMessage(`Przeanalizowano`, 'success');
       } else if (analysisResult.success) {
-        showMessage('Nie znaleziono podejrzanych twierdzeń', 'success');
+        showMessage('Przeanalizowano', 'success');
       } else {
         throw new Error(analysisResult.error || 'Analiza nie powiodła się');
       }
