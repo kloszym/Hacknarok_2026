@@ -1,12 +1,9 @@
-// gemini_module.js
-
 async function analyzeLink(urlFromUser) {
     try {
         const response = await fetch(urlFromUser);
         if (!response.ok) throw new Error("Strona nie odpowiedziała");
         const html = await response.text();
         
-        // Poprawiony regex, który łapie <p> z atrybutami (np. <p class="text">)
         const matches = html.match(/<p[^>]*>([\s\S]*?)<\/p>/g);
         if (!matches) return "Brak treści tekstowej na stronie.";
 
@@ -15,7 +12,7 @@ async function analyzeLink(urlFromUser) {
             .filter(text => text.length > 20)
             .join('\n\n');
 
-        return cleanText.substring(0, 8000); // 8k znaków starczy na analizę
+        return cleanText.substring(0, 8000); 
     } catch (e) {
         return "Błąd pobierania treści: " + e.message;
     }
@@ -23,11 +20,9 @@ async function analyzeLink(urlFromUser) {
 
 async function runFullFactCheck(searchResults, thesis, apiKey) {
 
-    // 1. Wyjmij same URLe (ogranicz do 5, żeby nie zabić limitów)
+    
     const urls = searchResults.map(r => r.url).slice(0, 5);
 
-    // 2. Odpal checkFactGemini dla każdego linku ASYNCHRONICZNIE
-    // Promise.allSettled jest bezpieczniejsze - jeśli jeden padnie, reszta idzie dalej
     const individualResultsPromises = urls.map(link => 
         checkFactGemini(link, thesis, apiKey).catch(err => ({
             link: link,
@@ -38,7 +33,6 @@ async function runFullFactCheck(searchResults, thesis, apiKey) {
 
     const individualResults = await Promise.all(individualResultsPromises);
 
-    // 3. Ostatnie zapytanie - Werdykt końcowy
     return await generateFinalVerdict(thesis, individualResults, apiKey);
 }
 
@@ -141,7 +135,6 @@ async function checkFactGemini(link, thesis, apiKey, retries = 2) {
       }
 
       const data = await response.json();
-      // Odpowiedź od Gemini znajduje się w tej ścieżce:
       const textResponse = data.candidates[0].content.parts[0].text;
       const result = JSON.parse(textResponse);
       return result;
@@ -167,9 +160,7 @@ async function analyzeWithGemini(claim, searchContext) {
         const finalResult = await runFullFactCheck(searchContext, claim, apiKey);
         
         return finalResult;
-        // finalResult będzie miał strukturę: { analysisText, verdict, sourceSummaries }
     } catch (err) {
-        // analyzeWithGemini failed
     }
 
 }

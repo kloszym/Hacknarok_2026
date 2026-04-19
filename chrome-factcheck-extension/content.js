@@ -1,7 +1,4 @@
-// Content script for handling text selection and interaction
-// This script runs on all web pages
 
-// Listen for messages from background script
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === 'ping') {
     sendResponse({ pong: true });
@@ -37,7 +34,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   return false;
 });
 
-// Optional: Add visual feedback when text is selected
 let lastSelection = '';
 
 document.addEventListener('mouseup', () => {
@@ -51,7 +47,6 @@ document.addEventListener('mousedown', () => {
   lastSelection = '';
 });
 
-// Wyciągnij widoczny tekst ze strony
 function extractVisibleText() {
   const contentSelectors = ['article', 'main', '[role="main"]', '.content', '.post', '.article', 'body'];
 
@@ -97,7 +92,6 @@ function extractVisibleText() {
   return textParts.join(' ').substring(0, 50000);
 }
 
-// Zaznacz podejrzane twierdzenia na stronie
 function highlightSuspiciousClaims(claims) {
   removeExistingHighlights();
 

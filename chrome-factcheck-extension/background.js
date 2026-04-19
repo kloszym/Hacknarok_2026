@@ -1,4 +1,3 @@
-// Importujemy pozostałe pliki
 importScripts('tavily.js', 'gemini_module.js', 'workflow.js');
 
 chrome.runtime.onInstalled.addListener(() => {
@@ -12,11 +11,9 @@ chrome.runtime.onInstalled.addListener(() => {
 chrome.contextMenus.onClicked.addListener(async (info, tab) => {
   if (info.menuItemId === 'factcheck') {
     const selectedText = info.selectionText;
-    
-    // Zapisujemy tekst, by UI mógł go pobrać
+
     await chrome.storage.local.set({ selectedText, timestamp: Date.now() });
     
-    // Otwieramy UI
     chrome.action.setPopup({ popup: 'factcheck.html' });
     chrome.action.openPopup();
     setTimeout(() => chrome.action.setPopup({ popup: 'popup.html' }), 1000);
@@ -26,7 +23,7 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
 // Nasłuchiwanie wiadomości z frontendu (factcheck.js)
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === 'factcheck') {
-    // URUCHAMIAMY GŁÓWNY WORKFLOW
+    // GŁÓWNY WORKFLOW
     startFactCheckWorkflow(request.text).then(sendResponse);
     return true; 
   }
