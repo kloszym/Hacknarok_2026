@@ -43,7 +43,7 @@ async function runFullFactCheck(searchResults, thesis, apiKey) {
 }
 
 async function generateFinalVerdict(thesis, individualResults, apiKey) {
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${apiKey}`;
     const todaysDate = new Date().toISOString().split('T')[0];
 
     const prompt = `
@@ -114,7 +114,7 @@ async function checkFactGemini(link, thesis, apiKey, retries = 2) {
 
         Unikaj ogólników i niepotwierdzonych informacji. Skup się na faktach i dowodach.
       `;
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${apiKey}`;
 
       const payload = {
         contents: [{
@@ -206,7 +206,7 @@ ZASADY:
 - Każdy cytat: max 200 znaków, dokładny cytat ze strony
 `;
 
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${apiKey}`;
 
     const response = await fetch(url, {
       method: 'POST',

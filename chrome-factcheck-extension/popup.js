@@ -1,54 +1,47 @@
+window.showMessage = function(text, type) {
+  var el = document.getElementById('message');
+  if (!el) return;
+  el.textContent = text;
+  el.className = 'message ' + type;
+  el.style.display = 'block';
+  setTimeout(function() { el.style.display = 'none'; }, 3000);
+};
+
 // Load localized messages and saved keys
 document.addEventListener('DOMContentLoaded', async () => {
   const tavilyInput = document.getElementById('tavilyKey');
   const geminiInput = document.getElementById('geminiKey');
-  const saveBtn = document.getElementById('saveBtn');
   const analyzeBtn = document.getElementById('analyzeBtn');
-  const message = document.getElementById('message');
-
-  // Ustawienie tekstu przycisku z plików lokalizacji (i18n)
-  saveBtn.textContent = chrome.i18n.getMessage('saveButton') || 'Zapisz ustawienia';
 
   // Wczytanie zapisanych kluczy z pamięci sync
-  const result = await chrome.storage.sync.get([
-    'tavilyApiKey', 
-    'geminiApiKey'
-  ]);
+  chrome.storage.sync.get(['tavilyApiKey', 'geminiApiKey'], function(result) {
+    if (result.tavilyApiKey && tavilyInput) tavilyInput.value = result.tavilyApiKey;
+    if (result.geminiApiKey && geminiInput) geminiInput.value = result.geminiApiKey;
 
-  if (result.tavilyApiKey) tavilyInput.value = result.tavilyApiKey;
-  if (result.geminiApiKey) geminiInput.value = result.geminiApiKey;
-
-  // Włącz przycisk analyze jeśli jest klucz Gemini
-  if (result.geminiApiKey) {
-    analyzeBtn.disabled = false;
-  }
+    // Włącz przycisk analyze jeśli jest klucz Gemini
+    if (result.geminiApiKey && analyzeBtn) {
+      analyzeBtn.disabled = false;
+    }
+  });
 
   // Obsługa zapisu
-  saveBtn.addEventListener('click', async () => {
-    const tavilyValue = tavilyInput.value.trim();
-    const geminiValue = geminiInput.value.trim();
-    // Walidacja: Tavily i Gemini są wymagane do działania
-    if (!tavilyValue || !geminiValue) {
-      showMessage(chrome.i18n.getMessage('error') || 'Klucze Tavily i Gemini są wymagane!', 'error');
-      return;
-    }
+  document.getElementById('saveBtn').addEventListener('click', function() {
+    var tavilyValue = tavilyInput ? tavilyInput.value.trim() : '';
+    var geminiValue = geminiInput ? geminiInput.value.trim() : '';
 
-    try {
-      // Zapisujemy tylko wymagane klucze
-      await chrome.storage.sync.set({ 
-        tavilyApiKey: tavilyValue,
-        geminiApiKey: geminiValue
-      });
+    var toSave = {};
+    if (tavilyValue) toSave.tavilyApiKey = tavilyValue;
+    if (geminiValue) toSave.geminiApiKey = geminiValue;
 
-      showMessage(chrome.i18n.getMessage('apiKeySaved') || 'Ustawienia zapisane!', 'success');
-      analyzeBtn.disabled = false;
-      // Zamknij popup po krótkiej chwili
-      setTimeout(() => {
-        window.close();
-      }, 1500);
-    } catch (error) {
-      showMessage('Błąd zapisu: ' + error.message, 'error');
-    }
+    chrome.storage.sync.set(toSave, function() {
+      if (chrome.runtime.lastError) {
+        window.showMessage('Błąd zapisu: ' + chrome.runtime.lastError.message, 'error');
+        return;
+      }
+      window.showMessage('Ustawienia zapisane!', 'success');
+      if (geminiValue && analyzeBtn) analyzeBtn.disabled = false;
+      setTimeout(function() { window.close(); }, 1500);
+    });
   });
 
   // Analyze Webpage
