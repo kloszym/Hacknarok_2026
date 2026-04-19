@@ -30,4 +30,11 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     startFactCheckWorkflow(request.text).then(sendResponse);
     return true; 
   }
+
+  if (request.action === 'analyzePageWithGemini') {
+    analyzePageWithGemini(request.text, request.url)
+      .then(sendResponse)
+      .catch(error => sendResponse({ success: false, error: error.message }));
+    return true;
+  }
 });
