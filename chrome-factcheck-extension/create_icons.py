@@ -16,31 +16,26 @@ except ImportError:
 import os
 
 def create_icon(size):
-    # Create image with gradient background
     img = Image.new('RGB', (size, size), color='white')
     draw = ImageDraw.Draw(img)
     
-    # Draw gradient background (purple)
     for y in range(size):
         r = int(102 + (118 - 102) * y / size)
         g = int(126 + (75 - 126) * y / size)
         b = int(234 + (162 - 234) * y / size)
         draw.rectangle([(0, y), (size, y+1)], fill=(r, g, b))
     
-    # Draw magnifying glass
     center_x = size // 2 - size // 8
     center_y = size // 2 - size // 8
     radius = size // 3
     
-    # Glass circle (white)
     draw.ellipse(
         [(center_x - radius, center_y - radius), 
          (center_x + radius, center_y + radius)],
         outline='white',
         width=max(2, size // 16)
     )
-    
-    # Handle
+
     handle_start_x = center_x + int(radius * 0.7)
     handle_start_y = center_y + int(radius * 0.7)
     handle_end_x = center_x + int(radius * 1.5)
@@ -52,7 +47,6 @@ def create_icon(size):
         width=max(2, size // 16)
     )
     
-    # Checkmark inside glass
     check_size = radius // 2
     check_x = center_x - check_size // 3
     check_y = center_y
@@ -72,11 +66,9 @@ def create_icon(size):
     
     return img
 
-# Create icons directory if it doesn't exist
 icons_dir = os.path.join(os.path.dirname(__file__), 'icons')
 os.makedirs(icons_dir, exist_ok=True)
 
-# Generate icons
 sizes = [16, 48, 128]
 for size in sizes:
     icon = create_icon(size)

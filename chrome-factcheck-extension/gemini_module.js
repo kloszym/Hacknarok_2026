@@ -1,12 +1,9 @@
-// gemini_module.js
-
 async function analyzeLink(urlFromUser) {
     try {
         const response = await fetch(urlFromUser);
         if (!response.ok) throw new Error("Strona nie odpowiedziała");
         const html = await response.text();
         
-        // Poprawiony regex, który łapie <p> z atrybutami (np. <p class="text">)
         const matches = html.match(/<p[^>]*>([\s\S]*?)<\/p>/g);
         if (!matches) return "Brak treści tekstowej na stronie.";
 
@@ -15,7 +12,7 @@ async function analyzeLink(urlFromUser) {
             .filter(text => text.length > 20)
             .join('\n\n');
 
-        return cleanText.substring(0, 8000); // 8k znaków starczy na analizę
+        return cleanText.substring(0, 8000); 
     } catch (e) {
         return "Błąd pobierania treści: " + e.message;
     }
@@ -23,12 +20,9 @@ async function analyzeLink(urlFromUser) {
 
 async function runFullFactCheck(searchResults, thesis, apiKey) {
 
-    // 1. Wyjmij same URLe (ogranicz do 5, żeby nie zabić limitów)
+    
     const urls = searchResults.map(r => r.url).slice(0, 5);
-    console.log("Rozpoczynam analizę dla linków:", urls);
 
-    // 2. Odpal checkFactGemini dla każdego linku ASYNCHRONICZNIE
-    // Promise.allSettled jest bezpieczniejsze - jeśli jeden padnie, reszta idzie dalej
     const individualResultsPromises = urls.map(link => 
         checkFactGemini(link, thesis, apiKey).catch(err => ({
             link: link,
@@ -39,14 +33,12 @@ async function runFullFactCheck(searchResults, thesis, apiKey) {
 
     const individualResults = await Promise.all(individualResultsPromises);
 
-    // 3. Ostatnie zapytanie - Werdykt końcowy
     return await generateFinalVerdict(thesis, individualResults, apiKey);
 }
 
 async function generateFinalVerdict(thesis, individualResults, apiKey) {
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${apiKey}`;
     const todaysDate = new Date().toISOString().split('T')[0];
-    console.log(`Generowanie werdyktu końcowego dla tezy: "${thesis}" na podstawie analiz z dnia ${todaysDate}`);
 
     const prompt = `
         Jesteś głównym sędzią systemu fact-checkingowego. 
@@ -78,7 +70,6 @@ async function generateFinalVerdict(thesis, individualResults, apiKey) {
         const textResponse = data.candidates[0].content.parts[0].text;
         return JSON.parse(textResponse);
     } catch (error) {
-        console.error("Błąd werdyktu końcowego:", error);
         return {
             analysisText: "Błąd podczas generowania werdyktu końcowego.",
             verdict: "error",
@@ -96,8 +87,6 @@ async function checkFactGemini(link, thesis, apiKey, retries = 2) {
     try {
 
       const site = await analyzeLink(link);
-      console.log(`[Attempt ${attempt + 1}/${retries + 1}] Sprawdzanie tezy: ${thesis}`);
-
       const todaysDate = new Date().toISOString().split('T')[0];
 
       
@@ -119,7 +108,7 @@ async function checkFactGemini(link, thesis, apiKey, retries = 2) {
 
         Unikaj ogólników i niepotwierdzonych informacji. Skup się na faktach i dowodach.
       `;
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${apiKey}`;
 
       const payload = {
         contents: [{
@@ -146,25 +135,18 @@ async function checkFactGemini(link, thesis, apiKey, retries = 2) {
       }
 
       const data = await response.json();
-      // Odpowiedź od Gemini znajduje się w tej ścieżce:
       const textResponse = data.candidates[0].content.parts[0].text;
       const result = JSON.parse(textResponse);
-      console.log(`✓ Sukces na próbie ${attempt + 1}`);
       return result;
       
     } catch (error) {
       lastError = error;
-      console.error(`✗ Błąd na próbie ${attempt + 1}:`, error.message);
       
-      // Jeśli to ostatnia próba, rzuć błąd
       if (attempt === retries) {
-        console.error(`Wszystkie ${retries + 1} próby nie powiodły się.`);
         throw new Error(`Nie udało się po ${retries + 1} próbach: ${lastError.message}`);
       }
       
-      // Czekaj przed kolejną próbą (exponential backoff)
       const waitTime = Math.pow(2, attempt) * 1000;
-      console.log(`Czekanie ${waitTime}ms przed następną próbą...`);
       await new Promise(resolve => setTimeout(resolve, waitTime));
     }
   }
@@ -178,9 +160,95 @@ async function analyzeWithGemini(claim, searchContext) {
         const finalResult = await runFullFactCheck(searchContext, claim, apiKey);
         
         return finalResult;
-        // finalResult będzie miał strukturę: { analysisText, verdict, sourceSummaries }
     } catch (err) {
-        console.error("Coś padło całkowicie:", err);
     }
 
+}
+
+async function analyzePageWithGemini(pageText, pageUrl) {
+  try {
+    const keys = await chrome.storage.sync.get(['geminiApiKey']);
+    const apiKey = keys.geminiApiKey;
+
+    if (!apiKey) {
+      throw new Error('Brak klucza API Gemini');
+    }
+
+    const prompt = `Jesteś ekspertem od wykrywania dezinformacji i manipulacji w treściach internetowych.
+
+Przeanalizuj poniższą treść ze strony: ${pageUrl}
+
+TREŚĆ STRONY:
+${pageText.substring(0, 30000)}
+
+ZADANIE:
+Znajdź maksymalnie 10 najbardziej podejrzanych stwierdzeń (manipulacja, dezinformacja, fake news).
+
+FORMAT ODPOWIEDZI (TYLKO JSON, BEZ TEKSTU):
+["cytat1","cytat2","cytat3"]
+
+PRZYKŁAD:
+["Szczepionki zawierają chipy 5G","Ziemia jest płaska"]
+
+ZASADY:
+- TYLKO tablica stringów JSON, zero dodatkowego tekstu
+- Jeśli brak podejrzanych: []
+- Max 10 twierdzeń
+- Każdy cytat: max 200 znaków, dokładny cytat ze strony
+`;
+
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${apiKey}`;
+
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: {
+          temperature: 0.2,
+          maxOutputTokens: 8192,
+          topP: 0.8,
+          topK: 40
+        }
+      })
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error?.message || 'Błąd zapytania do Gemini API');
+    }
+
+    const data = await response.json();
+    const responseText = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+
+    let suspiciousClaims = [];
+    try {
+      let cleanText = responseText.trim()
+        .replace(/^```json\s*/i, '')
+        .replace(/```\s*$/i, '')
+        .trim();
+
+      const jsonMatch = cleanText.match(/\[[\s\S]*\]/);
+      suspiciousClaims = JSON.parse(jsonMatch ? jsonMatch[0] : cleanText);
+    } catch (parseError) {
+      suspiciousClaims = [];
+    }
+
+    if (Array.isArray(suspiciousClaims)) {
+      suspiciousClaims = suspiciousClaims
+        .filter(claim => claim && typeof claim === 'string' && claim.trim())
+        .map(claim => ({
+          text: String(claim).substring(0, 200),
+          reason: 'Potencjalna dezinformacja wykryta przez AI'
+        }))
+        .slice(0, 10);
+    } else {
+      suspiciousClaims = [];
+    }
+
+    return { success: true, suspiciousClaims };
+
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
 }
