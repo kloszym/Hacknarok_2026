@@ -1,6 +1,6 @@
 {
   "extensionName": {
-    "message": "FactCheck AI"
+    "message": "BadSource Checker"
   },
   "extensionDescription": {
     "message": "Weryfikuj prawdziwość zaznaczonego tekstu za pomocą Google Fact Check Tools API"
